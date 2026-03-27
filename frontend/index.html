@@ -118,22 +118,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="app.js"></script>
-  <script>
-    // Floating leaves animation
-    (function() {
-      const container = document.getElementById('leavesContainer');
-      const emojis = ['🍃', '🌿', '☘️', '🌱', '🍀'];
-      for (let i = 0; i < 12; i++) {
-        const leaf = document.createElement('span');
-        leaf.className = 'leaf';
-        leaf.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-        leaf.style.left = Math.random() * 100 + '%';
-        leaf.style.animationDuration = (8 + Math.random() * 12) + 's';
-        leaf.style.animationDelay = Math.random() * 10 + 's';
-        leaf.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
-        container.appendChild(leaf);
-      }
-    })();
-  </script>
+  <script src="js/index.js"></script>
 </body>
+
 </html>

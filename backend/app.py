@@ -27,7 +27,9 @@ def create_app(config_name=None):
         static_folder=os.path.join(os.path.dirname(__file__), '..', 'frontend'),
         static_url_path=''
     )
-    app.config.from_object(config_map.get(config_name, config_map['development']))
+    config_obj = config_map.get(config_name, config_map['development'])
+    app.config.from_object(config_obj)
+    config_obj.init_app(app)
 
     # ── Extensions ──────────────────────────────────────────────
     db.init_app(app)
@@ -38,16 +40,25 @@ def create_app(config_name=None):
     CORS(app, origins=app.config.get('CORS_ORIGINS', ['http://localhost:5000']),
          supports_credentials=True)
 
-    # Talisman – relax CSP in dev for inline scripts/styles
+    # Talisman – harden security headers and CSP
     csp = {
         'default-src': ["'self'"],
-        'script-src': ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+        'script-src': ["'self'", "https://cdn.jsdelivr.net"],  # Removed 'unsafe-inline'
+
         'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
         'font-src': ["'self'", "https://fonts.gstatic.com"],
         'img-src': ["'self'", "data:", "https:"],
         'connect-src': ["'self'"],
     }
-    Talisman(app, content_security_policy=csp, force_https=False)
+    Talisman(
+        app,
+        content_security_policy=csp,
+        force_https=not app.debug,
+        strict_transport_security=True,
+        session_cookie_http_only=True,
+        frame_options='DENY'
+    )
+
 
     # ── Blueprints ──────────────────────────────────────────────
     from backend.routes.auth import auth_bp

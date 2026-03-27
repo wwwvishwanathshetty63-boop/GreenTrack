@@ -8,16 +8,23 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 class BaseConfig:
     """Base configuration."""
-    SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-dev-secret-key')
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'fallback-jwt-secret-key')
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     JWT_TOKEN_LOCATION = ['cookies']
     JWT_COOKIE_SECURE = False  # Set True in production (HTTPS)
-    JWT_COOKIE_CSRF_PROTECT = False  # We use our own CSRF
+    JWT_COOKIE_CSRF_PROTECT = True  # CSRF protection enabled
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
     JWT_COOKIE_SAMESITE = 'Lax'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    WTF_CSRF_ENABLED = False  # We handle CSRF via custom tokens for API
+    WTF_CSRF_ENABLED = False  # We handle CSRF via JWT CSRF tokens
     CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:5000').split(',')
+
+    @staticmethod
+    def init_app(app):
+        if not app.config.get('SECRET_KEY') or not app.config.get('JWT_SECRET_KEY'):
+            if not app.debug:
+                raise RuntimeError("SECRET_KEY and JWT_SECRET_KEY must be set in production")
+
 
 
 class DevelopmentConfig(BaseConfig):

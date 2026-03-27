@@ -8,6 +8,20 @@ const GreenTrack = (() => {
 
   const API_BASE = '';  // Same-origin — Flask serves frontend
 
+  // ── CSRF Token extraction ───────────────────────────────
+  function getCsrfToken() {
+    const name = 'csrf_access_token=';
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i].trim();
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return '';
+  }
+
   // ── API Helper ──────────────────────────────────────────
   async function api(path, options = {}) {
     const defaults = {
@@ -15,11 +29,22 @@ const GreenTrack = (() => {
       credentials: 'same-origin',   // Send cookies
     };
     const config = { ...defaults, ...options };
+    
+    // Add CSRF token for non-GET requests
+    const method = (config.method || 'GET').toUpperCase();
+    if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        config.headers['X-CSRF-TOKEN'] = csrfToken;
+      }
+    }
+
     if (options.headers) {
-      config.headers = { ...defaults.headers, ...options.headers };
+      config.headers = { ...config.headers, ...options.headers };
     }
     return fetch(API_BASE + path, config);
   }
+
 
   // ── Toast Notifications ─────────────────────────────────
   function toast(message, type = 'info') {
