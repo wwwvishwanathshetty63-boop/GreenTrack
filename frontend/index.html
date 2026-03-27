@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GreenTrack – Smart Carbon Footprint Tracker for Students. Track, reduce, and compete for a greener campus.">
+  <title>GreenTrack 🌱 – Smart Carbon Footprint Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <!-- ── Navbar ──────────────────────────────────────────── -->
+  <nav class="navbar" id="main-nav">
+    <a href="/" class="nav-brand">
+      <span class="emoji">🌱</span> GreenTrack
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="active">Home</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="leaderboard.html">Leaderboard</a></li>
+      <li id="navAuth"><a href="login.html" class="btn btn-primary btn-sm">Get Started</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+    <button class="nav-hamburger" id="navToggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- ── Hero ────────────────────────────────────────────── -->
+  <section class="hero" id="hero">
+    <div class="leaves" id="leavesContainer"></div>
+    <div class="hero-content">
+      <h1>Track Your <span class="highlight">Carbon Footprint</span></h1>
+      <p>
+        Join thousands of students making smarter, greener choices every day.
+        Log your activities, see your impact, and compete for the top spot on the leaderboard.
+      </p>
+      <div class="hero-actions">
+        <a href="login.html" class="btn btn-primary btn-lg" id="heroSignup">🚀 Start Tracking</a>
+        <a href="#features" class="btn btn-outline btn-lg">Learn More ↓</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="value" id="statUsers">1,200+</span>
+          <span class="label">Students Tracking</span>
+        </div>
+        <div class="hero-stat">
+          <span class="value" id="statSaved">4.8T</span>
+          <span class="label">CO₂ Saved</span>
+        </div>
+        <div class="hero-stat">
+          <span class="value" id="statScore">85</span>
+          <span class="label">Avg Green Score</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ────────────────────────────────────────── -->
+  <section class="features" id="features">
+    <div class="section-title">
+      <h2>Why GreenTrack?</h2>
+      <p>Everything you need to understand and reduce your environmental impact.</p>
+    </div>
+    <div class="features-grid">
+      <div class="glass-card feature-card animate-in animate-delay-1">
+        <div class="icon">📊</div>
+        <h3>Smart Dashboard</h3>
+        <p>Beautiful charts show your daily, weekly, and monthly carbon footprint at a glance.</p>
+      </div>
+      <div class="glass-card feature-card animate-in animate-delay-2">
+        <div class="icon">🏆</div>
+        <h3>Leaderboard</h3>
+        <p>Compete with peers and climb the ranks by maintaining the lowest carbon footprint.</p>
+      </div>
+      <div class="glass-card feature-card animate-in animate-delay-3">
+        <div class="icon">💡</div>
+        <h3>Smart Suggestions</h3>
+        <p>Get personalized tips based on your habits to reduce emissions effectively.</p>
+      </div>
+      <div class="glass-card feature-card animate-in animate-delay-4">
+        <div class="icon">🔒</div>
+        <h3>Secure & Private</h3>
+        <p>Your data is encrypted and protected with industry-standard security practices.</p>
+      </div>
+      <div class="glass-card feature-card animate-in animate-delay-1">
+        <div class="icon">📱</div>
+        <h3>Fully Responsive</h3>
+        <p>Track your footprint from any device – desktop, tablet, or mobile.</p>
+      </div>
+      <div class="glass-card feature-card animate-in animate-delay-2">
+        <div class="icon">🌍</div>
+        <h3>Real Impact</h3>
+        <p>See how your individual choices contribute to a healthier planet.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ─────────────────────────────────────────────── -->
+  <section style="padding: 4rem 2rem; text-align: center;">
+    <div class="glass-card" style="max-width: 600px; margin: 0 auto; padding: 3rem;">
+      <h2 style="font-size: 1.8rem; margin-bottom: 1rem;">Ready to Go Green? 🌿</h2>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+        Create your free account and start reducing your carbon footprint today.
+      </p>
+      <a href="login.html" class="btn btn-primary btn-lg">Create Free Account</a>
+    </div>
+  </section>
+
+  <!-- ── Footer ──────────────────────────────────────────── -->
+  <footer class="footer">
+    <p>🌱 GreenTrack &copy; 2026 – Making campuses greener, one student at a time.</p>
+  </footer>
+
+  <!-- ── Toast Container ─────────────────────────────────── -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+  <script>
+    // Floating leaves animation
+    (function() {
+      const container = document.getElementById('leavesContainer');
+      const emojis = ['🍃', '🌿', '☘️', '🌱', '🍀'];
+      for (let i = 0; i < 12; i++) {
+        const leaf = document.createElement('span');
+        leaf.className = 'leaf';
+        leaf.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        leaf.style.left = Math.random() * 100 + '%';
+        leaf.style.animationDuration = (8 + Math.random() * 12) + 's';
+        leaf.style.animationDelay = Math.random() * 10 + 's';
+        leaf.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+        container.appendChild(leaf);
+      }
+    })();
+  </script>
+</body>
+</html>

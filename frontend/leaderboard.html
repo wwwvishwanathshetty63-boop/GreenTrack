@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GreenTrack Leaderboard – See who has the lowest carbon footprint on campus.">
+  <title>Leaderboard – GreenTrack 🌱</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <!-- ── Navbar ──────────────────────────────────────────── -->
+  <nav class="navbar" id="main-nav">
+    <a href="/" class="nav-brand">
+      <span class="emoji">🌱</span> GreenTrack
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/">Home</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="leaderboard.html" class="active">Leaderboard</a></li>
+      <li id="navAuth"></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+    <button class="nav-hamburger" id="navToggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- ── Leaderboard Content ─────────────────────────────── -->
+  <main class="leaderboard-page">
+    <div class="glass-card leaderboard-card animate-in">
+      <div class="leaderboard-header">
+        <h2>🏆 Weekly Leaderboard</h2>
+        <p>Top 10 students with the lowest carbon footprint this week</p>
+      </div>
+      <div class="leaderboard-list" id="leaderboardList">
+        <div class="spinner" id="leaderboardSpinner"></div>
+      </div>
+    </div>
+
+    <!-- Info card -->
+    <div class="glass-card animate-in animate-delay-2" style="padding:2rem;margin-top:1.5rem;text-align:center;">
+      <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:0.75rem;">How Ranking Works</h3>
+      <p style="color:var(--text-muted);font-size:0.9rem;max-width:500px;margin:0 auto;line-height:1.7;">
+        Rankings are based on your <strong>total weekly carbon emissions</strong>.
+        Lower emissions = higher rank. Log your activities daily for the most accurate score.
+        The leaderboard refreshes every time you visit this page.
+      </p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>🌱 GreenTrack &copy; 2026 – Making campuses greener, one student at a time.</p>
+  </footer>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set nav auth state
+      const user = JSON.parse(localStorage.getItem('greentrack_user') || 'null');
+      const navAuth = document.getElementById('navAuth');
+      if (user) {
+        navAuth.innerHTML = '<a href="dashboard.html" class="btn btn-primary btn-sm">Dashboard</a>';
+      } else {
+        navAuth.innerHTML = '<a href="login.html" class="btn btn-primary btn-sm">Get Started</a>';
+      }
+
+      // Load leaderboard
+      async function loadLeaderboard() {
+        const listEl = document.getElementById('leaderboardList');
+        try {
+          const res = await GreenTrack.api('/api/leaderboard');
+          if (!res.ok) throw new Error('Failed to load');
+          const data = await res.json();
+
+          if (!data.leaderboard || data.leaderboard.length === 0) {
+            listEl.innerHTML = `
+              <div style="text-align:center;padding:3rem 1rem;color:var(--text-muted);">
+                <div style="font-size:3rem;margin-bottom:1rem;">🌿</div>
+                <p style="font-size:1rem;font-weight:600;">No rankings yet this week</p>
+                <p style="font-size:0.9rem;margin-top:0.5rem;">Start logging your carbon entries to appear on the leaderboard!</p>
+              </div>`;
+            return;
+          }
+
+          const medals = ['🥇', '🥈', '🥉'];
+          let html = '';
+          data.leaderboard.forEach((item, idx) => {
+            const medal = idx < 3 ? medals[idx] : '';
+            const rankClass = idx < 3 ? `style="background:${['linear-gradient(135deg,#fbbf24,#f59e0b)','linear-gradient(135deg,#94a3b8,#64748b)','linear-gradient(135deg,#f97316,#ea580c)'][idx]};color:white;"` : `style="background:var(--bg-primary);color:var(--text-muted);"`;
+            html += `
+              <div class="leaderboard-item animate-in" style="animation-delay:${idx * 0.08}s;">
+                <div class="rank" ${rankClass}>${item.rank}</div>
+                <div class="user-info">
+                  <div class="username">${medal} ${GreenTrack.escapeHtml(item.username)}</div>
+                  <div class="user-score">Weekly emissions</div>
+                </div>
+                <div class="emission-value">${item.weekly_total.toFixed(1)} kg</div>
+              </div>`;
+          });
+          listEl.innerHTML = html;
+
+        } catch (err) {
+          console.error('Leaderboard error:', err);
+          listEl.innerHTML = `
+            <div style="text-align:center;padding:2rem;color:var(--text-muted);">
+              <p>Failed to load leaderboard. <a href="#" onclick="location.reload()">Try again</a></p>
+            </div>`;
+        }
+      }
+
+      loadLeaderboard();
+    });
+  </script>
+</body>
+</html>

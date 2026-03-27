@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign in or create your GreenTrack account to start tracking your carbon footprint.">
+  <title>Login – GreenTrack 🌱</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <div class="auth-page">
+    <div class="auth-container">
+      <!-- Auth Card -->
+      <div class="glass-card auth-card" id="authCard">
+        <h2 id="authTitle">Welcome Back 👋</h2>
+        <p class="subtitle" id="authSubtitle">Sign in to your GreenTrack account</p>
+
+        <!-- Toggle -->
+        <div class="auth-toggle" id="authToggle">
+          <button class="active" data-tab="login" id="tabLogin">Sign In</button>
+          <button data-tab="signup" id="tabSignup">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label" for="loginUsername">Username</label>
+            <input type="text" class="form-input" id="loginUsername" placeholder="Enter your username" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="loginPassword">Password</label>
+            <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginBtn">
+            Sign In →
+          </button>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signupForm" class="hidden">
+          <div class="form-group">
+            <label class="form-label" for="signupUsername">Username</label>
+            <input type="text" class="form-input" id="signupUsername" placeholder="Choose a username" required autocomplete="username" minlength="3" maxlength="30">
+            <div class="form-error hidden" id="signupUsernameError"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signupEmail">Email</label>
+            <input type="email" class="form-input" id="signupEmail" placeholder="your@email.com" required autocomplete="email">
+            <div class="form-error hidden" id="signupEmailError"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signupPassword">Password</label>
+            <input type="password" class="form-input" id="signupPassword" placeholder="Min 8 chars, 1 letter + 1 number" required autocomplete="new-password" minlength="8">
+            <div class="form-error hidden" id="signupPasswordError"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signupConfirm">Confirm Password</label>
+            <input type="password" class="form-input" id="signupConfirm" placeholder="Re-enter password" required autocomplete="new-password">
+            <div class="form-error hidden" id="signupConfirmError"></div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="signupBtn">
+            Create Account 🌱
+          </button>
+        </form>
+      </div>
+
+      <a href="/" class="auth-back">← Back to Home</a>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabLogin = document.getElementById('tabLogin');
+      const tabSignup = document.getElementById('tabSignup');
+      const loginForm = document.getElementById('loginForm');
+      const signupForm = document.getElementById('signupForm');
+      const authTitle = document.getElementById('authTitle');
+      const authSubtitle = document.getElementById('authSubtitle');
+
+      function showTab(tab) {
+        if (tab === 'login') {
+          tabLogin.classList.add('active');
+          tabSignup.classList.remove('active');
+          loginForm.classList.remove('hidden');
+          signupForm.classList.add('hidden');
+          authTitle.textContent = 'Welcome Back 👋';
+          authSubtitle.textContent = 'Sign in to your GreenTrack account';
+        } else {
+          tabSignup.classList.add('active');
+          tabLogin.classList.remove('active');
+          signupForm.classList.remove('hidden');
+          loginForm.classList.add('hidden');
+          authTitle.textContent = 'Join GreenTrack 🌱';
+          authSubtitle.textContent = 'Create your account and start tracking';
+        }
+      }
+
+      tabLogin.addEventListener('click', () => showTab('login'));
+      tabSignup.addEventListener('click', () => showTab('signup'));
+
+      // Check URL hash
+      if (window.location.hash === '#signup') showTab('signup');
+
+      // ── Login ─────────────────────────────────────
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        if (!username || !password) {
+          GreenTrack.toast('Please fill in all fields', 'error');
+          return;
+        }
+
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
+
+        try {
+          const res = await GreenTrack.api('/api/login', {
+            method: 'POST',
+            body: JSON.stringify({ username, password }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('greentrack_user', JSON.stringify(data.user));
+            GreenTrack.toast('Login successful!', 'success');
+            setTimeout(() => window.location.href = 'dashboard.html', 800);
+          } else {
+            const err = await res.json();
+            GreenTrack.toast(err.error || 'Login failed', 'error');
+          }
+        } catch (error) {
+          GreenTrack.toast('Network error. Please try again.', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Sign In →';
+        }
+      });
+
+      // ── Signup ────────────────────────────────────
+      signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('signupUsername').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const password = document.getElementById('signupPassword').value;
+        const confirm = document.getElementById('signupConfirm').value;
+
+        // Client-side validation
+        let hasError = false;
+
+        if (username.length < 3 || !/^[a-zA-Z0-9_]+$/.test(username)) {
+          GreenTrack.showFieldError('signupUsernameError', 'Username must be 3+ chars (letters, numbers, underscores)');
+          hasError = true;
+        } else {
+          GreenTrack.hideFieldError('signupUsernameError');
+        }
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+          GreenTrack.showFieldError('signupEmailError', 'Please enter a valid email');
+          hasError = true;
+        } else {
+          GreenTrack.hideFieldError('signupEmailError');
+        }
+
+        if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+          GreenTrack.showFieldError('signupPasswordError', 'Min 8 chars with at least 1 letter and 1 number');
+          hasError = true;
+        } else {
+          GreenTrack.hideFieldError('signupPasswordError');
+        }
+
+        if (password !== confirm) {
+          GreenTrack.showFieldError('signupConfirmError', 'Passwords do not match');
+          hasError = true;
+        } else {
+          GreenTrack.hideFieldError('signupConfirmError');
+        }
+
+        if (hasError) return;
+
+        const btn = document.getElementById('signupBtn');
+        btn.disabled = true;
+        btn.textContent = 'Creating account...';
+
+        try {
+          const res = await GreenTrack.api('/api/register', {
+            method: 'POST',
+            body: JSON.stringify({ username, email, password }),
+          });
+
+          if (res.ok) {
+            GreenTrack.toast('Account created! Please sign in.', 'success');
+            setTimeout(() => showTab('login'), 1000);
+          } else {
+            const err = await res.json();
+            GreenTrack.toast(err.error || 'Registration failed', 'error');
+          }
+        } catch (error) {
+          GreenTrack.toast('Network error. Please try again.', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Create Account 🌱';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
