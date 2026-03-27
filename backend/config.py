@@ -41,7 +41,22 @@ class ProductionConfig(BaseConfig):
     """Production configuration."""
     DEBUG = False
     JWT_COOKIE_SECURE = True
+    # If DATABASE_URL is not set and we are on Vercel, fallback to a local SQLite in /tmp
+    # NOTE: SQLite on Vercel is ephemeral and will be reset on every cold start.
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    if not SQLALCHEMY_DATABASE_URI and os.getenv('VERCEL'):
+        SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/greentrack.db'
+
+    @staticmethod
+    def init_app(app):
+        # We still want a warning if secrets are missing, but let's not crash if we are debugging
+        if not app.config.get('SECRET_KEY') or not app.config.get('JWT_SECRET_KEY'):
+            if os.getenv('VERCEL'):
+                app.logger.warning("SECRET_KEY and JWT_SECRET_KEY are missing. Using defaults for now, but PLEASE set them in Vercel environment variables.")
+                app.config['SECRET_KEY'] = app.config.get('SECRET_KEY') or 'vercel-placeholder-secret'
+                app.config['JWT_SECRET_KEY'] = app.config.get('JWT_SECRET_KEY') or 'vercel-placeholder-jwt-secret'
+            elif not app.debug:
+                raise RuntimeError("SECRET_KEY and JWT_SECRET_KEY must be set in production")
 
 
 config_map = {

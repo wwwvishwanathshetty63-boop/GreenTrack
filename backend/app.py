@@ -107,7 +107,11 @@ def create_app(config_name=None):
 
     # ── Create tables ───────────────────────────────────────────
     with app.app_context():
-        instance_path = os.path.join(os.path.dirname(__file__), '..', 'instance')
+        if os.getenv('VERCEL'):
+            instance_path = '/tmp/instance'
+        else:
+            instance_path = os.path.join(os.path.dirname(__file__), '..', 'instance')
+        
         os.makedirs(instance_path, exist_ok=True)
         db.create_all()
 
